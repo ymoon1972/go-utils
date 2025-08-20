@@ -51,19 +51,24 @@ func TestArrayList_Insert(t *testing.T) {
     arr.Add(2)
     arr.Add(3)
 
-    err := arr.InsertAt(2, 10)
+    err := arr.InsertAt(0, 10)
     require.Nil(t, err, "ArrayList insert is failed")
     require.Equal(t, 4, arr.Size(), "ArrayList size is not equal")
-    require.ElementsMatch(t, []int{1, 2, 10, 3}, arr.Values(), "ArrayList values are not equal")
+    require.ElementsMatch(t, []int{10, 1, 2, 3}, arr.Values(), "ArrayList values are not equal")
+
+    err = arr.InsertAt(2, 11)
+    require.Nil(t, err, "ArrayList insert is failed")
+    require.Equal(t, 5, arr.Size(), "ArrayList size is not equal")
+    require.ElementsMatch(t, []int{10, 1, 11, 2, 3}, arr.Values(), "ArrayList values are not equal")
 
     value, err := arr.Get(2)
     require.Nil(t, err, "ArrayList get is failed")
-    require.Equal(t, 10, value, "ArrayList get(2) is not matched")
+    require.Equal(t, 11, value, "ArrayList get(2) is not matched")
 
     // insert at out of range
     err = arr.InsertAt(10, 10)
     require.NotNil(t, err, "ArrayList insert is failed")
-    require.Equal(t, 4, arr.Size(), "ArrayList size is not equal")
+    require.Equal(t, 5, arr.Size(), "ArrayList size is not equal")
 }
 
 func TestArrayList_Remove(t *testing.T) {
@@ -73,13 +78,14 @@ func TestArrayList_Remove(t *testing.T) {
     arr.Add(3)
     arr.Add(4)
 
-    err := arr.RemoveAt(2)
+    value, err := arr.RemoveAt(2)
     require.Nil(t, err, "ArrayList removeAt is failed")
     require.Equal(t, 3, arr.Size(), "ArrayList size is not equal")
+    require.Equal(t, 3, value, "ArrayList removeAt item is not matched")
     require.ElementsMatch(t, []int{1, 2, 4}, arr.Values(), "ArrayList values are not equal")
 
     // remove at out of range
-    err = arr.RemoveAt(10)
+    value, err = arr.RemoveAt(10)
     require.NotNil(t, err, "ArrayList removeAt is failed")
     require.Equal(t, 3, arr.Size(), "ArrayList size is not equal")
 }
@@ -138,10 +144,10 @@ func TestArrayList_Sort(t *testing.T) {
     arr := NewArrayList[int]()
     arr.AddAll([]int{1, 3, 4, 6, 5, 2})
 
-    arr.Sort(func(a int, b int) bool { return a < b })
+    arr.Sort(func(a int, b int) int { return a - b })
     require.ElementsMatch(t, []int{1, 2, 3, 4, 5, 6}, arr.Values(), "ArrayList sort is failed")
 
-    arr.Sort(func(a int, b int) bool { return a > b })
+    arr.Sort(func(a int, b int) int { return b - a })
     require.ElementsMatch(t, []int{6, 5, 4, 3, 2, 1}, arr.Values(), "ArrayList reverse sort is failed")
 }
 

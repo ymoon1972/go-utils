@@ -234,12 +234,12 @@ func (s *LinkedList[T]) Filter(predicate func(T) bool) *LinkedList[T] {
     return filtered
 }
 
-func (s *LinkedList[T]) Sort(less func(T, T) bool) {
+func (s *LinkedList[T]) Sort(comparator func(T, T) int) {
     if s.IsEmpty() {
         return
     }
 
-    s.head = mergeSort(s.head, less)
+    s.head = mergeSort(s.head, comparator)
     s.tail = s.head
     for s.tail.next != nil {
         s.tail = s.tail.next
@@ -319,15 +319,15 @@ func (s *LinkedList[T]) detachTailNode() *singleNode[T] {
     return node
 }
 
-func mergeSort[T comparable](head *singleNode[T], less func(T, T) bool) *singleNode[T] {
+func mergeSort[T comparable](head *singleNode[T], comparator func(T, T) int) *singleNode[T] {
     if head == nil || head.next == nil {
         return head
     }
 
     left, right := split(head)
-    left = mergeSort(left, less)
-    right = mergeSort(right, less)
-    return merge(left, right, less)
+    left = mergeSort(left, comparator)
+    right = mergeSort(right, comparator)
+    return merge(left, right, comparator)
 }
 
 func split[T comparable](head *singleNode[T]) (*singleNode[T], *singleNode[T]) {
@@ -346,7 +346,7 @@ func split[T comparable](head *singleNode[T]) (*singleNode[T], *singleNode[T]) {
     return head, middle
 }
 
-func merge[T comparable](left, right *singleNode[T], less func(T, T) bool) *singleNode[T] {
+func merge[T comparable](left, right *singleNode[T], comparator func(T, T) int) *singleNode[T] {
     if left == nil {
         return right
     }
@@ -356,12 +356,12 @@ func merge[T comparable](left, right *singleNode[T], less func(T, T) bool) *sing
     }
 
     var head *singleNode[T]
-    if less(left.value, right.value) {
+    if comparator(left.value, right.value) <= 0 {
         head = left
-        head.next = merge(left.next, right, less)
+        head.next = merge(left.next, right, comparator)
     } else {
         head = right
-        head.next = merge(left, right.next, less)
+        head.next = merge(left, right.next, comparator)
     }
 
     return head

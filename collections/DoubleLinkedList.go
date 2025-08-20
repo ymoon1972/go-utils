@@ -226,13 +226,13 @@ func (s *DoubleLinkedList[T]) Filter(predicate func(T) bool) *DoubleLinkedList[T
     return filtered
 }
 
-func (s *DoubleLinkedList[T]) Sort(less func(T, T) bool) {
+func (s *DoubleLinkedList[T]) Sort(comparator func(T, T) int) {
     if s.IsEmpty() {
         return
     }
 
     s.tail.prev.next = nil
-    s.head.next = mergeSortDoubleLinkedList(s.head.next, less)
+    s.head.next = mergeSortDoubleLinkedList(s.head.next, comparator)
 
     // Fix the tail pointer
     prev := s.head
@@ -304,15 +304,15 @@ func (s *DoubleLinkedList[T]) detachTailNode() *doubleNode[T] {
     return node
 }
 
-func mergeSortDoubleLinkedList[T comparable](head *doubleNode[T], less func(T, T) bool) *doubleNode[T] {
+func mergeSortDoubleLinkedList[T comparable](head *doubleNode[T], comparator func(T, T) int) *doubleNode[T] {
     if head == nil || head.next == nil {
         return head
     }
 
     left, right := splitDoubleLinkedList(head)
-    left = mergeSortDoubleLinkedList(left, less)
-    right = mergeSortDoubleLinkedList(right, less)
-    return mergeDoubleLinkedList(left, right, less)
+    left = mergeSortDoubleLinkedList(left, comparator)
+    right = mergeSortDoubleLinkedList(right, comparator)
+    return mergeDoubleLinkedList(left, right, comparator)
 }
 
 func splitDoubleLinkedList[T comparable](head *doubleNode[T]) (*doubleNode[T], *doubleNode[T]) {
@@ -331,7 +331,7 @@ func splitDoubleLinkedList[T comparable](head *doubleNode[T]) (*doubleNode[T], *
     return head, mid
 }
 
-func mergeDoubleLinkedList[T comparable](left, right *doubleNode[T], less func(T, T) bool) *doubleNode[T] {
+func mergeDoubleLinkedList[T comparable](left, right *doubleNode[T], comparator func(T, T) int) *doubleNode[T] {
     if left == nil {
         return right
     }
@@ -340,12 +340,12 @@ func mergeDoubleLinkedList[T comparable](left, right *doubleNode[T], less func(T
     }
 
     var head *doubleNode[T]
-    if less(left.value, right.value) {
+    if comparator(left.value, right.value) <= 0 {
         head = left
-        head.next = mergeDoubleLinkedList(left.next, right, less)
+        head.next = mergeDoubleLinkedList(left.next, right, comparator)
     } else {
         head = right
-        head.next = mergeDoubleLinkedList(left, right.next, less)
+        head.next = mergeDoubleLinkedList(left, right.next, comparator)
     }
     return head
 }

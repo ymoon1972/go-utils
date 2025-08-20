@@ -125,10 +125,10 @@ func TestNewDoubleLinkedList_Sort(t *testing.T) {
     list := NewDoubleLinkedList[int]()
     list.AddAll([]int{6, 4, 3, 5, 1, 2})
 
-    list.Sort(func(a int, b int) bool { return a < b })
+    list.Sort(func(a int, b int) int { return a - b })
     require.ElementsMatch(t, []int{1, 2, 3, 4, 5, 6}, list.Values(), "DoubleLinkedList sort is failed")
 
-    list.Sort(func(a int, b int) bool { return a > b })
+    list.Sort(func(a int, b int) int { return b - a })
     require.ElementsMatch(t, []int{6, 5, 4, 3, 2, 1}, list.Values(), "DoubleLinkedList reverse sort is failed")
     validateDLinkedListHead(t, list, 6)
     validateDLinkedListTail(t, list, 1)

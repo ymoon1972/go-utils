@@ -8,18 +8,26 @@ This repository provides a small set of generic data structures with familiar AP
 - DoubleLinkedList: doubly linked list with bidirectional traversal operations
 - Stack: LIFO stack backed by LinkedList (Push, Pop, Peek)
 - Queue: FIFO queue backed by LinkedList (Offer, Poll, Peek)
+- PriorityQueue: binary-heap priority queue with a user-supplied comparator (min-/max-heap behavior by comparator)
 
 All collections are implemented using Go generics (type parameters), with methods designed to be easy to use and test.
+
+## Library configuration
+
+This repository is configured as a library (no default executable). A small example program exists in `main.go`, but it is excluded from normal builds using the `ignore` build tag.
+
+- To run the example program locally: `go run -tags ignore .`
+- To build the library or run tests, just use standard Go commands (no tags required).
 
 ## Module
 
 Module name (from go.mod): `go-utils`
 
-Note: The module path is local (`go-utils`). If you plan to use this as a dependency from another project, you may want to update the module path (e.g., to your VCS hosting path) and run `go mod tidy`. For local usage within this repository, the current module name works as-is.
+Note: The module path is local (`go-utils`). If you plan to use this as a dependency from another project, update the module path to your VCS hosting path (e.g., `github.com/<you>/go-utils`) and run `go mod tidy`. For local usage within this repository, the current module name works as-is.
 
 ## Installation
 
-- As a local module: clone this repository and build/run directly.
+- As a local module: clone this repository. Optionally run the example with `go run -tags ignore .`.
 - As a dependency: set the module path to your VCS location and `go get <your-path>/go-utils`.
 
 ## Usage
@@ -88,6 +96,23 @@ front, _ := q.Peek() // 1
 v, _ := q.Poll()     // 1, queue now has 2,3
 _ = v
 ```
+
+### PriorityQueue
+```go
+// Comparator returns negative if a<b, zero if equal, positive if a>b
+cmp := func(a, b int) int { return a - b } // min-heap
+pq := collections.NewPriorityQueue[int](cmp)
+
+pq.Offer(5)
+pq.OfferValues([]int{3, 8, 1})
+
+peek, _ := pq.Peek() // 1 (smallest)
+val, _ := pq.Poll()  // 1, then 3 will be next
+_ = val
+_ = peek
+```
+
+Note: The comparator controls heap ordering. For a max-heap, invert the comparison (e.g., return b - a for ints).
 
 ## Testing
 

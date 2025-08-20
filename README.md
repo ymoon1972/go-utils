@@ -9,6 +9,7 @@ This repository provides a small set of generic data structures with familiar AP
 - Stack: LIFO stack backed by LinkedList (Push, Pop, Peek)
 - Queue: FIFO queue backed by LinkedList (Offer, Poll, Peek)
 - PriorityQueue: binary-heap priority queue with a user-supplied comparator (min-/max-heap behavior by comparator)
+- BinaryTree: binary search tree with comparator-defined ordering (Add, AddAll, Remove, Contains, in-order Values)
 
 All collections are implemented using Go generics (type parameters), with methods designed to be easy to use and test.
 
@@ -95,6 +96,36 @@ q.OfferValues([]int{2, 3})
 front, _ := q.Peek() // 1
 v, _ := q.Poll()     // 1, queue now has 2,3
 _ = v
+```
+
+### BinaryTree
+```go
+// Comparator returns negative if a<b, zero if equal, positive if a>b
+cmp := func(a, b int) int { return a - b }
+
+bt := collections.NewBinaryTree[int](cmp)
+bt.Add(7)
+bt.AddAll([]int{2, 4, 8})
+
+// In-order values are sorted by comparator
+vals := bt.Values() // []int{2, 4, 7, 8}
+_ = vals
+
+contains := bt.Contains(4) // true
+_ = contains
+
+// Remove a value
+_ = bt.Remove(8)
+_ = bt.Remove(2)
+
+// Size/empty
+size := bt.Size()   // current node count
+empty := bt.IsEmpty() // false unless cleared
+_ = size
+_ = empty
+
+bt.Clear()
+_ = bt.IsEmpty() // true
 ```
 
 ### PriorityQueue

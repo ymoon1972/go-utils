@@ -24,7 +24,7 @@ func (s *PriorityQueue[T]) Offer(value T) {
     // blow up
     pos := s.Size() - 1
     for pos > 0 {
-        top := pos / 2
+        top := (pos - 1) / 2
         if s.Compare(top, pos, s.comparator) <= 0 {
             break
         }
@@ -57,42 +57,31 @@ func (s *PriorityQueue[T]) Poll() (T, error) {
     }
 
     value, _ := s.Get(0)
-    s.Swap(0, s.Size()-1)
-    _, _ = s.RemoveAt(s.Size() - 1)
+    last, _ := s.RemoveAt(s.Size() - 1)
+    if !s.IsEmpty() {
+        s.SetAt(0, last)
 
-    // bubble down the values
-    top := 0
-    for top < s.Size() {
-        left := top*2 + 1
-        right := top*2 + 2
-        if left >= s.Size() {
-            // out of range
-            break
-        }
+        length := s.Size()
+        index := 0
+        for {
+            left := index*2 + 1
+            right := index*2 + 2
+            smallest := index
 
-        if right >= s.Size() {
-            // only a left child exists
-            if s.Compare(top, left, s.comparator) > 0 {
-                s.Swap(top, left)
+            if left < length && s.Compare(left, smallest, s.comparator) <= 0 {
+                smallest = left
             }
-            break
-        }
-
-        if s.Compare(left, right, s.comparator) <= 0 {
-            // take the left child
-            if s.Compare(top, left, s.comparator) > 0 {
-                s.Swap(top, left)
-                top = left
+            if right < length && s.Compare(right, smallest, s.comparator) <= 0 {
+                smallest = right
             }
-            continue
-        }
 
-        // take the right child
-        if s.Compare(top, right, s.comparator) <= 0 {
-            break
+            if smallest == index {
+                break
+            }
+
+            s.Swap(smallest, index)
+            index = smallest
         }
-        s.Swap(top, right)
-        top = right
     }
 
     return value, nil

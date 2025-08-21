@@ -26,6 +26,10 @@ func (s *List[T]) Values() []T {
     return s.items
 }
 
+func (s *List[T]) Clear() {
+    s.items = []T{}
+}
+
 func (s *List[T]) Add(value T) {
     s.items = append(s.items, value)
 }
@@ -63,6 +67,15 @@ func (s *List[T]) Get(index int) (T, error) {
     }
 
     return s.items[index], nil
+}
+
+func (s *List[T]) SetAt(index int, value T) bool {
+    if index < 0 || index >= s.Size() {
+        return false
+    }
+
+    s.items[index] = value
+    return true
 }
 
 func (s *List[T]) RemoveAt(index int) (T, error) {
@@ -153,8 +166,4 @@ func ReduceArrayList[T comparable, V any](s *List[T], initial V, reducer func(ac
         acc = reducer(acc, item)
     }
     return acc
-}
-
-func (s *List[T]) Clear() {
-    s.items = []T{}
 }

@@ -10,6 +10,11 @@ This repository provides a small set of generic data structures with familiar AP
 - Queue: FIFO queue backed by LinkedList (Offer, Poll, Peek)
 - PriorityQueue: binary-heap priority queue with a user-supplied comparator (min-/max-heap behavior by comparator)
 - BinaryTree: binary search tree with comparator-defined ordering (Offer, OfferAll, Remove, Contains, in-order Values)
+- ConcurrentArray: thread-safe array-backed list (Add, AddAll, InsertAt, RemoveAt, Contains, Sort, Filter, Map, Reduce)
+- ConcurrentList: concurrent list with thread-safe operations (Add, AddAll, Remove, Contains, Values)
+- ConcurrentQueue: thread-safe FIFO queue (Offer, OfferValues, Poll, Peek)
+- ConcurrentStack: thread-safe LIFO stack (Push, PushValues, Pop, Peek)
+- ConcurrentPriorityQueue: thread-safe binary-heap priority queue with comparator (Offer, OfferValues, Poll, Peek)
 
 All collections are implemented using Go generics (type parameters), with methods designed to be easy to use and test.
 
@@ -71,6 +76,23 @@ _ = ll.InsertAt(1, "b") // [z, b, a]
 head, _ := ll.GetHead()
 _ = head
 vals := ll.Values() // []string{"z","b","a"}
+```
+
+### DoubleLinkedList
+```go
+import "go-utils/list"
+
+dl := list.NewDoubleLinkedList[int]()
+dl.Add(1)
+dl.AddTail(3)
+dl.AddHead(0)          // [0, 1, 3]
+_ = dl.InsertAt(2, 2)   // [0, 1, 2, 3]
+head, _ := dl.GetHead() // 0
+tail, _ := dl.GetTail() // 3
+vals := dl.Values()     // []int{0, 1, 2, 3}
+_, _ = head, tail
+v, _ := dl.RemoveTail() // 3, now values are [0, 1, 2]
+_ = v
 ```
 
 ### Stack
@@ -148,6 +170,74 @@ _ = peek
 
 Note: The comparator controls heap ordering. For a max-heap, invert the comparison (e.g., return b - a for ints).
 
+### ConcurrentList
+```go
+import "go-utils/list"
+
+cl := list.NewConcurrentList[int]()
+cl.Add(1)
+cl.Add(2)
+_ = cl.InsertAt(1, 10) // [1, 10, 2]
+cl.Sort(func(a, b int) int { return a - b })
+vals := cl.Values() // []int{1, 2, 10}
+_ = vals
+```
+
+### ConcurrentArray
+```go
+import "go-utils/array"
+
+ca := array.NewConcurrentArray[int]()
+ca.Add(1)
+ca.AddAll([]int{2, 3})
+_ = ca.InsertAt(1, 10) // [1, 10, 2, 3]
+ca.Sort(func(a, b int) int { return a - b })
+valsA := ca.Values() // []int{1, 2, 3, 10}
+_ = valsA
+```
+
+### ConcurrentQueue
+```go
+import "go-utils/queue"
+
+cq := queue.NewConcurrentQueue[int]()
+cq.Offer(1)
+cq.OfferValues([]int{2, 3})
+frontQ, _ := cq.Peek() // 1
+valQ, _ := cq.Poll()   // 1, queue now has 2,3
+_, _ = frontQ, valQ
+```
+
+### ConcurrentStack
+```go
+import "go-utils/stack"
+
+cs := stack.NewConcurrentStack[int]()
+cs.Push(10)
+cs.Push(20)
+topS, _ := cs.Peek() // 20
+valS, _ := cs.Pop()   // 20, stack now has 10
+_, _ = topS, valS
+```
+
+### ConcurrentPriorityQueue
+```go
+import "go-utils/queue"
+
+// Comparator returns negative if a<b, zero if equal, positive if a>b
+cmp := func(a, b int) int { return a - b } // min-heap
+cpq := queue.NewConcurrentPriorityQueue[int](cmp)
+
+cpq.Offer(5)
+cpq.OfferValues([]int{3, 8, 1})
+
+peekCPQ, _ := cpq.Peek() // 1 (smallest)
+valCPQ, _ := cpq.Poll()  // 1, then 3 will be next
+_, _ = valCPQ, peekCPQ
+```
+
+Note: The comparator controls heap ordering. For a max-heap, invert the comparison (e.g., return b - a for ints).
+
 ## Testing
 
 This project uses `testify` for assertions. To run all tests:
@@ -156,6 +246,8 @@ This project uses `testify` for assertions. To run all tests:
 go test ./...
 ```
 
-## License
+## Requirements
+- Go 1.18+ (uses Go generics)
 
+## License
 This project is licensed under the terms of the LICENSE file included in this repository.

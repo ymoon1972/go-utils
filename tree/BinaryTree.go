@@ -35,12 +35,12 @@ func (s *BinaryTree[T]) Values() []T {
     }
 
     values := queue.NewQueue[T]()
-    collectValues(s.head, values)
+    collect(s.head, values)
     return values.Values()
 }
 
 func (s *BinaryTree[T]) Offer(value T) {
-    s.head = addNode(s.head, value, s.comparator)
+    s.head = add(s.head, value, s.comparator)
     s.size++
 }
 
@@ -55,7 +55,7 @@ func (s *BinaryTree[T]) Contains(value T) bool {
         return false
     }
 
-    return findNode(s.head, value, s.comparator)
+    return find(s.head, value, s.comparator)
 }
 
 func (s *BinaryTree[T]) Remove(value T) bool {
@@ -63,7 +63,7 @@ func (s *BinaryTree[T]) Remove(value T) bool {
         return false
     }
 
-    head, removed := removeNode(s.head, value, s.comparator)
+    head, removed := remove(s.head, value, s.comparator)
     s.head = head
     if removed {
         s.size--
@@ -91,20 +91,10 @@ func (s *BinaryTree[T]) Poll() (T, error) {
         return zero, errors.New("tree is empty")
     }
 
-    top, value := pollNode(s.head)
+    top, value := poll(s.head)
     s.head = top
     s.size--
     return value, nil
-}
-
-func pollNode[T comparable](node *treeNode[T]) (*treeNode[T], T) {
-    if node.left == nil {
-        return node.right, node.value
-    }
-
-    left, value := pollNode(node.left)
-    node.left = left
-    return node, value
 }
 
 func (s *BinaryTree[T]) Clone() *BinaryTree[T] {
@@ -146,31 +136,41 @@ func (s *BinaryTree[T]) Clone() *BinaryTree[T] {
     }
 }
 
-func collectValues[T comparable](node *treeNode[T], values *queue.Queue[T]) {
+func poll[T comparable](node *treeNode[T]) (*treeNode[T], T) {
+    if node.left == nil {
+        return node.right, node.value
+    }
+
+    left, value := poll(node.left)
+    node.left = left
+    return node, value
+}
+
+func collect[T comparable](node *treeNode[T], values *queue.Queue[T]) {
     if node == nil {
         return
     }
 
-    collectValues(node.left, values)
+    collect(node.left, values)
     values.Offer(node.value)
-    collectValues(node.right, values)
+    collect(node.right, values)
 }
 
-func addNode[T comparable](node *treeNode[T], value T, comparator func(a, b T) int) *treeNode[T] {
+func add[T comparable](node *treeNode[T], value T, comparator func(a, b T) int) *treeNode[T] {
     if node == nil {
         return &treeNode[T]{value: value}
     }
 
     if comparator(value, node.value) <= 0 {
-        node.left = addNode(node.left, value, comparator)
+        node.left = add(node.left, value, comparator)
     } else {
-        node.right = addNode(node.right, value, comparator)
+        node.right = add(node.right, value, comparator)
     }
 
     return node
 }
 
-func findNode[T comparable](node *treeNode[T], value T, comparator func(a, b T) int) bool {
+func find[T comparable](node *treeNode[T], value T, comparator func(a, b T) int) bool {
     if node == nil {
         return false
     }
@@ -179,13 +179,13 @@ func findNode[T comparable](node *treeNode[T], value T, comparator func(a, b T) 
     if result == 0 {
         return true
     } else if result < 0 {
-        return findNode(node.left, value, comparator)
+        return find(node.left, value, comparator)
     } else {
-        return findNode(node.right, value, comparator)
+        return find(node.right, value, comparator)
     }
 }
 
-func removeNode[T comparable](node *treeNode[T], value T, comparator func(a, b T) int) (*treeNode[T], bool) {
+func remove[T comparable](node *treeNode[T], value T, comparator func(a, b T) int) (*treeNode[T], bool) {
     if node == nil {
         return nil, false
     }
@@ -203,12 +203,12 @@ func removeNode[T comparable](node *treeNode[T], value T, comparator func(a, b T
     }
 
     if result < 0 {
-        left, removed := removeNode(node.left, value, comparator)
+        left, removed := remove(node.left, value, comparator)
         node.left = left
         return node, removed
     }
 
-    right, removed := removeNode(node.right, value, comparator)
+    right, removed := remove(node.right, value, comparator)
     node.right = right
     return node, removed
 }

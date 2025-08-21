@@ -2,6 +2,7 @@ package list
 
 import (
     "errors"
+    "go-utils/array"
 )
 
 type singleNode[T comparable] struct {
@@ -202,6 +203,12 @@ func (s *LinkedList[T]) Merge(list *LinkedList[T]) {
     for current != nil {
         s.AddTail(current.value)
         current = current.next
+    }
+}
+
+func (s *LinkedList[T]) MergeArray(arr *array.List[T]) {
+    for _, value := range arr.Values() {
+        s.AddTail(value)
     }
 }
 

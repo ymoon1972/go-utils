@@ -2,6 +2,7 @@ package list
 
 import (
     "errors"
+    "go-utils/array"
 )
 
 type doubleNode[T comparable] struct {
@@ -161,7 +162,7 @@ func (s *DoubleLinkedList[T]) RemoveAt(index int) (T, error) {
 
 func (s *DoubleLinkedList[T]) Contains(value T) bool {
     current := s.head.next
-    for current != nil {
+    for current.next != nil {
         if current.value == value {
             return true
         }
@@ -184,6 +185,20 @@ func (s *DoubleLinkedList[T]) Clone() *DoubleLinkedList[T] {
 func (s *DoubleLinkedList[T]) Merge(list *DoubleLinkedList[T]) {
     current := list.head.next
     for current.next != nil {
+        s.Add(current.value)
+        current = current.next
+    }
+}
+
+func (s *DoubleLinkedList[T]) MergeArray(arr *array.List[T]) {
+    for _, value := range arr.Values() {
+        s.Add(value)
+    }
+}
+
+func (s *DoubleLinkedList[T]) MergeList(list *LinkedList[T]) {
+    current := list.head
+    for current != nil {
         s.Add(current.value)
         current = current.next
     }

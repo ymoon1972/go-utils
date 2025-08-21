@@ -1,4 +1,4 @@
-package collections
+package array
 
 import (
     "errors"
@@ -6,35 +6,35 @@ import (
     "sort"
 )
 
-type ArrayList[T comparable] struct {
+type List[T comparable] struct {
     items []T
 }
 
-func NewArrayList[T comparable]() *ArrayList[T] {
-    return &ArrayList[T]{}
+func NewArrayList[T comparable]() *List[T] {
+    return &List[T]{}
 }
 
-func (s *ArrayList[T]) Size() int {
+func (s *List[T]) Size() int {
     return len(s.items)
 }
 
-func (s *ArrayList[T]) IsEmpty() bool {
+func (s *List[T]) IsEmpty() bool {
     return s.Size() == 0
 }
 
-func (s *ArrayList[T]) Values() []T {
+func (s *List[T]) Values() []T {
     return s.items
 }
 
-func (s *ArrayList[T]) Add(value T) {
+func (s *List[T]) Add(value T) {
     s.items = append(s.items, value)
 }
 
-func (s *ArrayList[T]) AddAll(values []T) {
+func (s *List[T]) AddAll(values []T) {
     s.items = append(s.items, values...)
 }
 
-func (s *ArrayList[T]) InsertAt(index int, value T) error {
+func (s *List[T]) InsertAt(index int, value T) error {
     if index < 0 || index > s.Size() {
         return errors.New(fmt.Sprintf("Index %d is out of range with size %d", index, s.Size()))
     }
@@ -56,7 +56,7 @@ func (s *ArrayList[T]) InsertAt(index int, value T) error {
     return nil
 }
 
-func (s *ArrayList[T]) Get(index int) (T, error) {
+func (s *List[T]) Get(index int) (T, error) {
     if index < 0 || index >= s.Size() {
         var zero T
         return zero, errors.New(fmt.Sprintf("Index %d is out of range with size %d", index, s.Size()))
@@ -65,7 +65,7 @@ func (s *ArrayList[T]) Get(index int) (T, error) {
     return s.items[index], nil
 }
 
-func (s *ArrayList[T]) RemoveAt(index int) (T, error) {
+func (s *List[T]) RemoveAt(index int) (T, error) {
     if index < 0 || index >= s.Size() {
         var zero T
         return zero, errors.New(fmt.Sprintf("Index %d is out of range with size %d", index, s.Size()))
@@ -85,23 +85,31 @@ func (s *ArrayList[T]) RemoveAt(index int) (T, error) {
     return value, nil
 }
 
-func (s *ArrayList[T]) Clone() *ArrayList[T] {
+func (s *List[T]) Clone() *List[T] {
     itemsCopy := make([]T, s.Size())
     copy(itemsCopy, s.items)
-    return &ArrayList[T]{items: itemsCopy}
+    return &List[T]{items: itemsCopy}
 }
 
-func (s *ArrayList[T]) Merge(list *ArrayList[T]) {
+func (s *List[T]) Merge(list *List[T]) {
     s.items = append(s.items, list.items...)
 }
 
-func (s *ArrayList[T]) Reverse() {
+func (s *List[T]) Reverse() {
     for i, j := 0, s.Size()-1; i < j; i, j = i+1, j-1 {
         s.items[i], s.items[j] = s.items[j], s.items[i]
     }
 }
 
-func (s *ArrayList[T]) Filter(predicate func(T) bool) *ArrayList[T] {
+func (s *List[T]) Compare(left, right int, comparator func(a, b T) int) int {
+    return comparator(s.items[left], s.items[right])
+}
+
+func (s *List[T]) Swap(left, right int) {
+    s.items[left], s.items[right] = s.items[right], s.items[left]
+}
+
+func (s *List[T]) Filter(predicate func(T) bool) *List[T] {
     filtered := NewArrayList[T]()
     for _, item := range s.items {
         if predicate(item) {
@@ -111,13 +119,13 @@ func (s *ArrayList[T]) Filter(predicate func(T) bool) *ArrayList[T] {
     return filtered
 }
 
-func (s *ArrayList[T]) Sort(comparator func(T, T) int) {
+func (s *List[T]) Sort(comparator func(T, T) int) {
     sort.Slice(s.items, func(i, j int) bool {
         return comparator(s.items[i], s.items[j]) <= 0
     })
 }
 
-func (s *ArrayList[T]) Contains(value T) bool {
+func (s *List[T]) Contains(value T) bool {
     for _, item := range s.items {
         if item == value {
             return true
@@ -127,7 +135,7 @@ func (s *ArrayList[T]) Contains(value T) bool {
     return false
 }
 
-func MapArrayList[T comparable, V comparable](s *ArrayList[T], mapper func(T) V) *ArrayList[V] {
+func MapArrayList[T comparable, V comparable](s *List[T], mapper func(T) V) *List[V] {
     if s.IsEmpty() {
         return NewArrayList[V]()
     }
@@ -139,7 +147,7 @@ func MapArrayList[T comparable, V comparable](s *ArrayList[T], mapper func(T) V)
     return result
 }
 
-func ReduceArrayList[T comparable, V any](s *ArrayList[T], initial V, reducer func(acc V, item T) V) V {
+func ReduceArrayList[T comparable, V any](s *List[T], initial V, reducer func(acc V, item T) V) V {
     acc := initial
     for _, item := range s.items {
         acc = reducer(acc, item)
@@ -147,6 +155,6 @@ func ReduceArrayList[T comparable, V any](s *ArrayList[T], initial V, reducer fu
     return acc
 }
 
-func (s *ArrayList[T]) Clear() {
+func (s *List[T]) Clear() {
     s.items = []T{}
 }

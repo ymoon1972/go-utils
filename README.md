@@ -9,16 +9,9 @@ This repository provides a small set of generic data structures with familiar AP
 - Stack: LIFO stack backed by LinkedList (Push, Pop, Peek)
 - Queue: FIFO queue backed by LinkedList (Offer, Poll, Peek)
 - PriorityQueue: binary-heap priority queue with a user-supplied comparator (min-/max-heap behavior by comparator)
-- BinaryTree: binary search tree with comparator-defined ordering (Add, AddAll, Remove, Contains, in-order Values)
+- BinaryTree: binary search tree with comparator-defined ordering (Offer, OfferAll, Remove, Contains, in-order Values)
 
 All collections are implemented using Go generics (type parameters), with methods designed to be easy to use and test.
-
-## Library configuration
-
-This repository is configured as a library (no default executable). A small example program exists in `main.go`, but it is excluded from normal builds using the `ignore` build tag.
-
-- To run the example program locally: `go run -tags ignore .`
-- To build the library or run tests, just use standard Go commands (no tags required).
 
 ## Module
 
@@ -28,7 +21,7 @@ Note: The module path is local (`go-utils`). If you plan to use this as a depend
 
 ## Installation
 
-- As a local module: clone this repository. Optionally run the example with `go run -tags ignore .`.
+- As a local module: clone this repository.
 - As a dependency: set the module path to your VCS location and `go get <your-path>/go-utils`.
 
 ## Usage
@@ -41,11 +34,11 @@ package main
 
 import (
     "fmt"
-    collections "go-utils/collections"
+    "go-utils/array"
 )
 
 func main() {
-    arr := collections.NewArrayList[int]()
+    arr := array.NewArrayList[int]()
     arr.Add(1)
     arr.AddAll([]int{2, 3})
     _ = arr.InsertAt(2, 13) // [1, 2, 13, 3]
@@ -55,11 +48,11 @@ func main() {
     // Utilities
     fmt.Println("contains 2?", arr.Contains(2))
     arr.Reverse()
-    arr.Sort(func(a, b int) bool { return a < b })
+    arr.Sort(func(a, b int) int { return a - b })
 
     evens := arr.Filter(func(x int) bool { return x%2 == 0 })
-    doubled := collections.MapArrayList(evens, func(x int) int { return x * 2 })
-    sum := collections.ReduceArrayList(doubled, 0, func(acc, x int) int { return acc + x })
+    doubled := array.MapArrayList(evens, func(x int) int { return x * 2 })
+    sum := array.ReduceArrayList(doubled, 0, func(acc, x int) int { return acc + x })
 
     fmt.Println("evens:", evens.Values())
     fmt.Println("doubled:", doubled.Values())
@@ -69,9 +62,11 @@ func main() {
 
 ### LinkedList
 ```go
-ll := collections.NewLinkedList[string]()
+import "go-utils/list"
+
+ll := list.NewLinkedList[string]()
 ll.Add("a")
-ll.AddHead("z")       // [z, a]
+ll.AddHead("z")         // [z, a]
 _ = ll.InsertAt(1, "b") // [z, b, a]
 head, _ := ll.GetHead()
 _ = head
@@ -80,7 +75,9 @@ vals := ll.Values() // []string{"z","b","a"}
 
 ### Stack
 ```go
-s := collections.NewStack[int]()
+import "go-utils/stack"
+
+s := stack.NewStack[int]()
 s.Push(10)
 s.Push(20)
 top, _ := s.Peek() // 20
@@ -90,7 +87,9 @@ _ = v
 
 ### Queue
 ```go
-q := collections.NewQueue[int]()
+import "go-utils/queue"
+
+q := queue.NewQueue[int]()
 q.Offer(1)
 q.OfferValues([]int{2, 3})
 front, _ := q.Peek() // 1
@@ -100,12 +99,14 @@ _ = v
 
 ### BinaryTree
 ```go
+import "go-utils/tree"
+
 // Comparator returns negative if a<b, zero if equal, positive if a>b
 cmp := func(a, b int) int { return a - b }
 
-bt := collections.NewBinaryTree[int](cmp)
-bt.Add(7)
-bt.AddAll([]int{2, 4, 8})
+bt := tree.NewBinaryTree[int](cmp)
+bt.Offer(7)
+bt.OfferAll([]int{2, 4, 8})
 
 // In-order values are sorted by comparator
 vals := bt.Values() // []int{2, 4, 7, 8}
@@ -119,7 +120,7 @@ _ = bt.Remove(8)
 _ = bt.Remove(2)
 
 // Size/empty
-size := bt.Size()   // current node count
+size := bt.Size()     // current node count
 empty := bt.IsEmpty() // false unless cleared
 _ = size
 _ = empty
@@ -130,9 +131,11 @@ _ = bt.IsEmpty() // true
 
 ### PriorityQueue
 ```go
+import "go-utils/queue"
+
 // Comparator returns negative if a<b, zero if equal, positive if a>b
 cmp := func(a, b int) int { return a - b } // min-heap
-pq := collections.NewPriorityQueue[int](cmp)
+pq := queue.NewPriorityQueue[int](cmp)
 
 pq.Offer(5)
 pq.OfferValues([]int{3, 8, 1})

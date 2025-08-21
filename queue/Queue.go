@@ -1,11 +1,13 @@
-package collections
+package queue
+
+import "go-utils/list"
 
 type Queue[T comparable] struct {
-    *LinkedList[T]
+    *list.LinkedList[T]
 }
 
 func NewQueue[T comparable]() *Queue[T] {
-    return &Queue[T]{NewLinkedList[T]()}
+    return &Queue[T]{list.NewLinkedList[T]()}
 }
 
 func (s *Queue[T]) Offer(value T) {

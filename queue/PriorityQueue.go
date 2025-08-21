@@ -1,17 +1,18 @@
-package collections
+package queue
 
 import (
     "errors"
+    "go-utils/array"
 )
 
 type PriorityQueue[T comparable] struct {
-    *ArrayList[T]
+    *array.List[T]
     comparator func(a, b T) int
 }
 
 func NewPriorityQueue[T comparable](comparator func(a, b T) int) *PriorityQueue[T] {
     return &PriorityQueue[T]{
-        NewArrayList[T](),
+        array.NewArrayList[T](),
         comparator,
     }
 }
@@ -24,12 +25,12 @@ func (s *PriorityQueue[T]) Offer(value T) {
     pos := s.Size() - 1
     for pos > 0 {
         top := pos / 2
-        if s.comparator(s.items[top], s.items[pos]) <= 0 {
+        if s.Compare(top, pos, s.comparator) <= 0 {
             break
         }
 
         // swap
-        s.items[top], s.items[pos] = s.items[pos], s.items[top]
+        s.Swap(top, pos)
         pos = top
     }
 }
@@ -46,7 +47,7 @@ func (s *PriorityQueue[T]) Peek() (T, error) {
         return zero, errors.New("queue is empty")
     }
 
-    return s.items[0], nil
+    return s.Get(0)
 }
 
 func (s *PriorityQueue[T]) Poll() (T, error) {
@@ -55,8 +56,8 @@ func (s *PriorityQueue[T]) Poll() (T, error) {
         return zero, errors.New("queue is empty")
     }
 
-    value := s.items[0]
-    s.items[0] = s.items[s.Size()-1]
+    value, _ := s.Get(0)
+    s.Swap(0, s.Size()-1)
     _, _ = s.RemoveAt(s.Size() - 1)
 
     // bubble down the values
@@ -71,26 +72,26 @@ func (s *PriorityQueue[T]) Poll() (T, error) {
 
         if right >= s.Size() {
             // only a left child exists
-            if s.comparator(s.items[top], s.items[left]) > 0 {
-                s.items[top], s.items[left] = s.items[left], s.items[top]
+            if s.Compare(top, left, s.comparator) > 0 {
+                s.Swap(top, left)
             }
             break
         }
 
-        if s.comparator(s.items[left], s.items[right]) <= 0 {
+        if s.Compare(left, right, s.comparator) <= 0 {
             // take the left child
-            if s.comparator(s.items[top], s.items[left]) > 0 {
-                s.items[top], s.items[left] = s.items[left], s.items[top]
+            if s.Compare(top, left, s.comparator) > 0 {
+                s.Swap(top, left)
                 top = left
             }
             continue
         }
 
         // take the right child
-        if s.comparator(s.items[top], s.items[right]) <= 0 {
+        if s.Compare(top, right, s.comparator) <= 0 {
             break
         }
-        s.items[top], s.items[right] = s.items[right], s.items[top]
+        s.Swap(top, right)
         top = right
     }
 

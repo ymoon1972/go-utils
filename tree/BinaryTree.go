@@ -1,6 +1,9 @@
-package collections
+package tree
 
-import "errors"
+import (
+    "errors"
+    "go-utils/queue"
+)
 
 type treeNode[T comparable] struct {
     value T
@@ -31,7 +34,7 @@ func (s *BinaryTree[T]) Values() []T {
         return []T{}
     }
 
-    values := NewQueue[T]()
+    values := queue.NewQueue[T]()
     collectValues(s.head, values)
     return values.Values()
 }
@@ -109,10 +112,10 @@ func (s *BinaryTree[T]) Clone() *BinaryTree[T] {
         return NewBinaryTree[T](s.comparator)
     }
 
-    src := NewQueue[*treeNode[T]]()
+    src := queue.NewQueue[*treeNode[T]]()
     src.Offer(s.head)
 
-    dest := NewQueue[*treeNode[T]]()
+    dest := queue.NewQueue[*treeNode[T]]()
     destHead := &treeNode[T]{value: s.head.value}
     dest.Offer(destHead)
 
@@ -143,7 +146,7 @@ func (s *BinaryTree[T]) Clone() *BinaryTree[T] {
     }
 }
 
-func collectValues[T comparable](node *treeNode[T], values *Queue[T]) {
+func collectValues[T comparable](node *treeNode[T], values *queue.Queue[T]) {
     if node == nil {
         return
     }

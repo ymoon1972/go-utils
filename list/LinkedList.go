@@ -5,19 +5,29 @@ import (
 	"go-utils/array"
 )
 
-type singleNode[T comparable] struct {
+type doubleNode[T comparable] struct {
 	value T
-	next  *singleNode[T]
+	prev  *doubleNode[T]
+	next  *doubleNode[T]
 }
 
 type LinkedList[T comparable] struct {
-	head *singleNode[T]
-	tail *singleNode[T]
+	head *doubleNode[T]
+	tail *doubleNode[T]
 	size int
 }
 
 func NewLinkedList[T comparable]() *LinkedList[T] {
-	return &LinkedList[T]{}
+	var zero T
+	head := &doubleNode[T]{value: zero}
+	tail := &doubleNode[T]{value: zero}
+	head.next = tail
+	tail.prev = head
+	return &LinkedList[T]{
+		head: head,
+		tail: tail,
+		size: 0,
+	}
 }
 
 func (s *LinkedList[T]) Size() int {
@@ -29,15 +39,14 @@ func (s *LinkedList[T]) IsEmpty() bool {
 }
 
 func (s *LinkedList[T]) Clear() {
-	s.head = nil
-	s.tail = nil
+	s.head.next = s.tail
+	s.tail.prev = s.head
 	s.size = 0
 }
 
 func (s *LinkedList[T]) Values() []T {
 	values := make([]T, s.size)
-
-	current := s.head
+	current := s.head.next
 	for i := 0; i < s.size; i++ {
 		values[i] = current.value
 		current = current.next
@@ -60,19 +69,13 @@ func (s *LinkedList[T]) AddAll(values []T) {
 }
 
 func (s *LinkedList[T]) AddHead(value T) {
-	if s.IsEmpty() {
-		s.attachHeadNode(&singleNode[T]{value: value})
-	} else {
-		s.attachHeadNode(&singleNode[T]{value: value, next: s.head})
-	}
+	newNode := &doubleNode[T]{value: value, prev: s.head, next: s.head.next}
+	s.attachHeadNode(newNode)
 }
 
 func (s *LinkedList[T]) AddTail(value T) {
-	if s.IsEmpty() {
-		s.AddHead(value)
-	} else {
-		s.attachTailNode(&singleNode[T]{value: value})
-	}
+	newNode := &doubleNode[T]{value: value, prev: s.tail.prev, next: s.tail}
+	s.attachTailNode(newNode)
 }
 
 func (s *LinkedList[T]) InsertAt(index int, value T) {
@@ -81,18 +84,14 @@ func (s *LinkedList[T]) InsertAt(index int, value T) {
 	} else if index >= s.size {
 		s.AddTail(value)
 	} else {
-		current := s.head
+		current := s.head.next
 		for i := 0; i < index; i++ {
 			current = current.next
 		}
 
-		if current == s.tail {
-			s.tail.next = &singleNode[T]{value: value}
-			s.tail = s.tail.next
-		} else {
-			next := current.next
-			current.next = &singleNode[T]{value: value, next: next}
-		}
+		newNode := &doubleNode[T]{value: value, prev: current.prev, next: current}
+		current.prev.next = newNode
+		current.prev = newNode
 		s.size++
 	}
 }
@@ -102,8 +101,7 @@ func (s *LinkedList[T]) GetHead() (T, error) {
 		var zero T
 		return zero, errors.New("List is empty")
 	}
-
-	return s.head.value, nil
+	return s.head.next.value, nil
 }
 
 func (s *LinkedList[T]) GetTail() (T, error) {
@@ -111,8 +109,7 @@ func (s *LinkedList[T]) GetTail() (T, error) {
 		var zero T
 		return zero, errors.New("List is empty")
 	}
-
-	return s.tail.value, nil
+	return s.tail.prev.value, nil
 }
 
 func (s *LinkedList[T]) GetAt(index int) (T, error) {
@@ -121,11 +118,10 @@ func (s *LinkedList[T]) GetAt(index int) (T, error) {
 		return zero, errors.New("Index out of range")
 	}
 
-	current := s.head
+	current := s.head.next
 	for i := 0; i < index; i++ {
 		current = current.next
 	}
-
 	return current.value, nil
 }
 
@@ -153,29 +149,20 @@ func (s *LinkedList[T]) RemoveAt(index int) (T, error) {
 		return zero, errors.New("Index out of range")
 	}
 
-	if index == 0 || s.Size() == 1 {
-		return s.RemoveHead()
-	}
-
-	if index == s.size-1 {
-		return s.RemoveTail()
-	}
-
-	prev := s.head
-	current := s.head
+	current := s.head.next
 	for i := 0; i < index; i++ {
-		prev = current
 		current = current.next
 	}
-
-	prev.next = current.next
+	value := current.value
+	current.prev.next = current.next
+	current.next.prev = current.prev
 	s.size--
-	return current.value, nil
+	return value, nil
 }
 
 func (s *LinkedList[T]) Contains(value T) bool {
-	current := s.head
-	for current != nil {
+	current := s.head.next
+	for current.next != nil {
 		if current.value == value {
 			return true
 		}
@@ -186,29 +173,34 @@ func (s *LinkedList[T]) Contains(value T) bool {
 
 func (s *LinkedList[T]) Clone() *LinkedList[T] {
 	list := NewLinkedList[T]()
-	current := s.head
-	for current != nil {
-		list.AddTail(current.value)
+
+	current := s.head.next
+	for current.next != nil {
+		list.Add(current.value)
 		current = current.next
 	}
 	return list
 }
 
 func (s *LinkedList[T]) Merge(list *LinkedList[T]) {
-	if list.IsEmpty() {
-		return
-	}
-
-	current := list.head
-	for current != nil {
-		s.AddTail(current.value)
+	current := list.head.next
+	for current.next != nil {
+		s.Add(current.value)
 		current = current.next
 	}
 }
 
 func (s *LinkedList[T]) MergeArray(arr *array.Array[T]) {
 	for _, value := range arr.Values() {
-		s.AddTail(value)
+		s.Add(value)
+	}
+}
+
+func (s *LinkedList[T]) MergeList(list *LinkedList[T]) {
+	current := list.head
+	for current != nil {
+		s.Add(current.value)
+		current = current.next
 	}
 }
 
@@ -217,28 +209,24 @@ func (s *LinkedList[T]) Reverse() {
 		return
 	}
 
-	var prev *singleNode[T]
-	current := s.head
-	for current != nil {
-		next := current.next
-		current.next = prev
-		prev = current
-		current = next
+	var temp *doubleNode[T]
+	node := s.head.next
+	current := s.head.next
+	for current.next != nil {
+		temp = current.prev
+		current.prev = current.next
+		current.next = temp
+
+		current = current.prev
 	}
 
-	s.head, s.tail = s.tail, s.head
-}
+	if temp != nil {
+		temp.prev.prev = s.head
+		s.head.next = temp.prev
 
-func (s *LinkedList[T]) Filter(predicate func(T) bool) *LinkedList[T] {
-	filtered := NewLinkedList[T]()
-	current := s.head
-	for current != nil {
-		if predicate(current.value) {
-			filtered.AddTail(current.value)
-		}
-		current = current.next
+		s.tail.prev = node
+		node.next = s.tail
 	}
-	return filtered
 }
 
 func (s *LinkedList[T]) Sort(comparator func(T, T) int) {
@@ -246,98 +234,62 @@ func (s *LinkedList[T]) Sort(comparator func(T, T) int) {
 		return
 	}
 
-	s.head = mergeSort(s.head, comparator)
-	s.tail = s.head
-	for s.tail.next != nil {
-		s.tail = s.tail.next
+	s.tail.prev.next = nil
+	s.head.next = mergeSortList(s.head.next, comparator)
+
+	// Fix the tail pointer
+	prev := s.head
+	curr := s.head.next
+	for curr != nil {
+		curr.prev = prev
+		prev = curr
+		curr = curr.next
 	}
+
+	prev.next = s.tail
+	s.tail.prev = prev
 }
 
-func MapLinkedList[T comparable, V comparable](s *LinkedList[T], mapper func(T) V) *LinkedList[V] {
-	if s.IsEmpty() {
-		return NewLinkedList[V]()
-	}
-
-	result := NewLinkedList[V]()
-	current := s.head
-	for current != nil {
-		result.AddTail(mapper(current.value))
-		current = current.next
-	}
-	return result
-}
-
-func ReduceLinkedList[T comparable, V any](s *LinkedList[T], initial V, reducer func(acc V, item T) V) V {
-	acc := initial
-	current := s.head
-	for current != nil {
-		acc = reducer(acc, current.value)
-		current = current.next
-	}
-
-	return acc
-}
-
-func (s *LinkedList[T]) attachHeadNode(node *singleNode[T]) {
-	if s.IsEmpty() {
-		s.head = node
-		s.tail = s.head
-	} else {
-		newNode := node
-		s.head = newNode
-	}
+func (s *LinkedList[T]) attachHeadNode(node *doubleNode[T]) {
+	s.head.next.prev = node
+	s.head.next = node
 	s.size++
 }
 
-func (s *LinkedList[T]) attachTailNode(node *singleNode[T]) {
-	s.tail.next = node
-	s.tail = node
-	s.tail.next = nil
+func (s *LinkedList[T]) attachTailNode(node *doubleNode[T]) {
+	s.tail.prev.next = node
+	s.tail.prev = node
 	s.size++
 }
 
-func (s *LinkedList[T]) detachHeadNode() *singleNode[T] {
-	node := s.head
-	if s.head == s.tail {
-		s.Clear()
-	} else {
-		s.head = s.head.next
-		s.size--
-	}
+func (s *LinkedList[T]) detachHeadNode() *doubleNode[T] {
+	node := s.head.next
+	s.head.next = s.head.next.next
+	s.head.next.prev = s.head
+	s.size--
 	return node
 }
 
-func (s *LinkedList[T]) detachTailNode() *singleNode[T] {
-	node := s.tail
-	if s.head == s.tail {
-		s.Clear()
-	} else {
-		prev := s.head
-		current := s.head
-		for current.next != nil {
-			prev = current
-			current = current.next
-		}
-		prev.next = nil
-		s.tail = prev
-		s.size--
-	}
-
+func (s *LinkedList[T]) detachTailNode() *doubleNode[T] {
+	node := s.tail.prev
+	s.tail.prev = s.tail.prev.prev
+	s.tail.prev.next = s.tail
+	s.size--
 	return node
 }
 
-func mergeSort[T comparable](head *singleNode[T], comparator func(T, T) int) *singleNode[T] {
+func mergeSortList[T comparable](head *doubleNode[T], comparator func(T, T) int) *doubleNode[T] {
 	if head == nil || head.next == nil {
 		return head
 	}
 
-	left, right := split(head)
-	left = mergeSort(left, comparator)
-	right = mergeSort(right, comparator)
-	return merge(left, right, comparator)
+	left, right := splitList(head)
+	left = mergeSortList(left, comparator)
+	right = mergeSortList(right, comparator)
+	return mergeList(left, right, comparator)
 }
 
-func split[T comparable](head *singleNode[T]) (*singleNode[T], *singleNode[T]) {
+func splitList[T comparable](head *doubleNode[T]) (*doubleNode[T], *doubleNode[T]) {
 	if head == nil || head.next == nil {
 		return head, nil
 	}
@@ -348,28 +300,26 @@ func split[T comparable](head *singleNode[T]) (*singleNode[T], *singleNode[T]) {
 		fast = fast.next.next
 	}
 
-	middle := slow.next
+	mid := slow.next
 	slow.next = nil
-	return head, middle
+	return head, mid
 }
 
-func merge[T comparable](left, right *singleNode[T], comparator func(T, T) int) *singleNode[T] {
+func mergeList[T comparable](left, right *doubleNode[T], comparator func(T, T) int) *doubleNode[T] {
 	if left == nil {
 		return right
 	}
-
 	if right == nil {
 		return left
 	}
 
-	var head *singleNode[T]
+	var head *doubleNode[T]
 	if comparator(left.value, right.value) <= 0 {
 		head = left
-		head.next = merge(left.next, right, comparator)
+		head.next = mergeList(left.next, right, comparator)
 	} else {
 		head = right
-		head.next = merge(left, right.next, comparator)
+		head.next = mergeList(left, right.next, comparator)
 	}
-
 	return head
 }

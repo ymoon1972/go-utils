@@ -115,7 +115,7 @@ func (s *ConcurrentArray[T]) Filter(predicate func(T) bool) *Array[T] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return s.arr.Filter(predicate)
+	return Filter(s.arr.Iterator(), predicate)
 }
 
 func (s *ConcurrentArray[T]) Sort(comparator func(T, T) int) {
@@ -123,18 +123,4 @@ func (s *ConcurrentArray[T]) Sort(comparator func(T, T) int) {
 	defer s.mu.Unlock()
 
 	s.arr.Sort(comparator)
-}
-
-func MapConcurrentArray[T comparable, V comparable](s *ConcurrentArray[T], mapper func(T) V) *Array[V] {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return MapArray(s.arr, mapper)
-}
-
-func ReduceConcurrentArray[T comparable, V any](s *ConcurrentArray[T], initial V, reducer func(acc V, item T) V) V {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return ReduceArray(s.arr, initial, reducer)
 }

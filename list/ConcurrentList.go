@@ -7,11 +7,11 @@ import (
 
 type ConcurrentList[T comparable] struct {
 	mu   sync.RWMutex
-	list *DoubleLinkedList[T]
+	list *LinkedList[T]
 }
 
 func NewConcurrentList[T comparable]() *ConcurrentList[T] {
-	return &ConcurrentList[T]{list: NewDoubleLinkedList[T]()}
+	return &ConcurrentList[T]{list: NewLinkedList[T]()}
 }
 
 func (s *ConcurrentList[T]) Size() int {
@@ -161,11 +161,11 @@ func (s *ConcurrentList[T]) Reverse() {
 	s.list.Reverse()
 }
 
-func (s *ConcurrentList[T]) Filter(predicate func(T) bool) *DoubleLinkedList[T] {
+func (s *ConcurrentList[T]) Filter(predicate func(T) bool) *LinkedList[T] {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return s.list.Filter(predicate)
+	return Filter(s.list.Iterator(), predicate)
 }
 
 func (s *ConcurrentList[T]) Sort(comparator func(T, T) int) {
@@ -173,18 +173,4 @@ func (s *ConcurrentList[T]) Sort(comparator func(T, T) int) {
 	defer s.mu.Unlock()
 
 	s.list.Sort(comparator)
-}
-
-func MapConcurrentList[T, V comparable](s *ConcurrentList[T], mapper func(T) V) *DoubleLinkedList[V] {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return MapDoubleLinkedList[T, V](s.list, mapper)
-}
-
-func ReduceConcurrentList[T comparable, V any](s *ConcurrentList[T], initial V, reducer func(V, T) V) V {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	return ReduceDoubleLinkedList[T, V](s.list, initial, reducer)
 }

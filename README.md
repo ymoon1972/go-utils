@@ -43,25 +43,27 @@ import (
 )
 
 func main() {
-    arr := array.NewArrayList[int]()
-    arr.Add(1)
-    arr.AddAll([]int{2, 3})
-    _ = arr.InsertAt(2, 13) // [1, 2, 13, 3]
+  arr := array.NewArrayList[int]()
+  arr.Add(1)
+  arr.AddAll([]int{2, 3})
+  _ = arr.InsertAt(2, 12)
+  fmt.Println("values:", arr.Values()) // [1, 2, 12, 3]
 
-    fmt.Println("values:", arr.Values())
+  // Utilities
+  fmt.Println("contains 2?", arr.Contains(2)) // true
+  arr.Reverse()
+  fmt.Println("values:", arr.Values()) // [3, 12, 2, 1]
 
-    // Utilities
-    fmt.Println("contains 2?", arr.Contains(2))
-    arr.Reverse()
-    arr.Sort(func(a, b int) int { return a - b })
+  arr.Sort(func(a, b int) int { return a - b })
+  fmt.Println("values:", arr.Values()) // [1, 2, 3, 12]
 
-    evens := arr.Filter(func(x int) bool { return x%2 == 0 })
-    doubled := array.MapArray(evens, func(x int) int { return x * 2 })
-    sum := array.ReduceArrayList(doubled, 0, func(acc, x int) int { return acc + x })
+  evens := Filter(arr.Iterator(), func(x int) bool { return x%2 == 0 })
+  doubled := Map(evens.Iterator(), func(x int) int { return x * 2 })
+  sum := Reduce(doubled.Iterator(), 0, func(acc, x int) int { return acc + x })
 
-    fmt.Println("evens:", evens.Values())
-    fmt.Println("doubled:", doubled.Values())
-    fmt.Println("sum:", sum)
+  fmt.Println("evens:", evens.Values())     // [2, 12]
+  fmt.Println("doubled:", doubled.Values()) // [4, 24]
+  fmt.Println("sum:", sum)                  // 28
 }
 ```
 
@@ -69,30 +71,31 @@ func main() {
 ```go
 import "go-utils/list"
 
-ll := list.NewLinkedList[string]()
-ll.Add("a")
-ll.AddHead("z")         // [z, a]
-_ = ll.InsertAt(1, "b") // [z, b, a]
-head, _ := ll.GetHead()
-_ = head
-vals := ll.Values() // []string{"z","b","a"}
-```
+func main() {
+  ll := list.NewLinkedList[int]()
+  ll.Add(1)
+  ll.AddTail(3)
+  ll.AddHead(0) // [0, 1, 3]
+  ll.InsertAt(2, 2) // [0, 1, 2, 3]
 
-### DoubleLinkedList
-```go
-import "go-utils/list"
+  head, _ := ll.GetHead()
+  tail, _ := ll.GetTail()
+  vals := ll.Values()
+  fmt.Println("head:", head) // 0
+  fmt.Println("tail:", tail) // 3
+  fmt.Println("vals:", vals) // []int{0, 1, 2, 3}
 
-dl := list.NewDoubleLinkedList[int]()
-dl.Add(1)
-dl.AddTail(3)
-dl.AddHead(0)          // [0, 1, 3]
-_ = dl.InsertAt(2, 2)   // [0, 1, 2, 3]
-head, _ := dl.GetHead() // 0
-tail, _ := dl.GetTail() // 3
-vals := dl.Values()     // []int{0, 1, 2, 3}
-_, _ = head, tail
-v, _ := dl.RemoveTail() // 3, now values are [0, 1, 2]
-_ = v
+  evens := Filter(ll.Iterator(), func (x int) bool { return x%2 == 0 })
+  doubled := Map(evens.Iterator(), func (x int) int { return x * 2 })
+  sum := Reduce(doubled.Iterator(), 0, func (acc, x int) int { return acc + x })
+  fmt.Println("evens:", evens.Values()) // [0, 2]
+  fmt.Println("doubled:", doubled.Values()) // [0, 4]
+  fmt.Println("sum:", sum) // 4
+
+  v, _ := ll.RemoveTail() // 3, now values are [0, 1, 2]
+  fmt.Println("Removed:", v) // 3
+  fmt.Println("Values:", ll.Values()) // [0, 1, 2]
+}
 ```
 
 ### Stack

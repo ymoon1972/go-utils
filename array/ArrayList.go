@@ -122,16 +122,6 @@ func (s *Array[T]) Swap(left, right int) {
 	s.items[left], s.items[right] = s.items[right], s.items[left]
 }
 
-func (s *Array[T]) Filter(predicate func(T) bool) *Array[T] {
-	filtered := NewArrayList[T]()
-	for _, item := range s.items {
-		if predicate(item) {
-			filtered.Add(item)
-		}
-	}
-	return filtered
-}
-
 func (s *Array[T]) Sort(comparator func(T, T) int) {
 	sort.Slice(s.items, func(i, j int) bool {
 		return comparator(s.items[i], s.items[j]) <= 0
@@ -146,24 +136,4 @@ func (s *Array[T]) Contains(value T) bool {
 	}
 
 	return false
-}
-
-func MapArray[T comparable, V comparable](s *Array[T], mapper func(T) V) *Array[V] {
-	if s.IsEmpty() {
-		return NewArrayList[V]()
-	}
-
-	result := NewArrayList[V]()
-	for _, item := range s.items {
-		result.Add(mapper(item))
-	}
-	return result
-}
-
-func ReduceArray[T comparable, V any](s *Array[T], initial V, reducer func(acc V, item T) V) V {
-	acc := initial
-	for _, item := range s.items {
-		acc = reducer(acc, item)
-	}
-	return acc
 }

@@ -132,14 +132,6 @@ func TestArrayList_Reverse(t *testing.T) {
 	require.ElementsMatch(t, []int{3, 2, 1}, arr.Values(), "ArrayList reverse is failed")
 }
 
-func TestArrayList_Filter(t *testing.T) {
-	arr := NewArrayList[int]()
-	arr.AddAll([]int{1, 2, 3, 4, 5, 6})
-
-	even := arr.Filter(func(value int) bool { return value%2 == 0 })
-	require.ElementsMatch(t, []int{2, 4, 6}, even.Values(), "ArrayList filter is failed")
-}
-
 func TestArrayList_Sort(t *testing.T) {
 	arr := NewArrayList[int]()
 	arr.AddAll([]int{1, 3, 4, 6, 5, 2})
@@ -160,18 +152,37 @@ func TestArrayList_Contains(t *testing.T) {
 	require.False(t, arr.Contains(7), "ArrayList contains is failed")
 }
 
-func TestArrayList_MapArrayList(t *testing.T) {
+func TestArrayList_Each(t *testing.T) {
+	arr := NewArrayList[int]()
+	arr.AddAll([]int{1, 2, 3})
+
+	second := NewArrayList[int]()
+	arr.Iterator().Each(func(value int) {
+		second.Add(value)
+	})
+	require.ElementsMatch(t, []int{1, 2, 3}, second.Values(), "ArrayList clone is failed")
+}
+
+func TestArrayList_Map(t *testing.T) {
 	arr := NewArrayList[int]()
 	arr.AddAll([]int{1, 2, 3, 4, 5, 6})
 
-	even := MapArray(arr, func(value int) bool { return value%2 == 0 })
+	even := Map(arr.Iterator(), func(value int) bool { return value%2 == 0 })
 	require.ElementsMatch(t, []bool{false, true, false, true, false, true}, even.Values(), "ArrayList map is failed")
 }
 
-func TestArrayList_ReduceArrayList(t *testing.T) {
+func TestArrayList_Reduce(t *testing.T) {
 	arr := NewArrayList[int]()
 	arr.AddAll([]int{1, 2, 3, 4, 5, 6})
 
-	sum := ReduceArray(arr, 0, func(acc int, value int) int { return acc + value })
+	sum := Reduce(arr.Iterator(), 0, func(acc int, value int) int { return acc + value })
 	require.Equal(t, 21, sum, "ArrayList reduce is failed")
+}
+
+func TestArrayList_Filter(t *testing.T) {
+	arr := NewArrayList[int]()
+	arr.AddAll([]int{1, 2, 3, 4, 5, 6})
+
+	even := Filter(arr.Iterator(), func(value int) bool { return value%2 == 0 })
+	require.ElementsMatch(t, []int{2, 4, 6}, even.Values(), "ArrayList filter is failed")
 }

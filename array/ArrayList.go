@@ -148,7 +148,7 @@ func (s *Array[T]) Contains(value T) bool {
 	return false
 }
 
-func MapArrayList[T comparable, V comparable](s *Array[T], mapper func(T) V) *Array[V] {
+func MapArray[T comparable, V comparable](s *Array[T], mapper func(T) V) *Array[V] {
 	if s.IsEmpty() {
 		return NewArrayList[V]()
 	}
@@ -160,7 +160,7 @@ func MapArrayList[T comparable, V comparable](s *Array[T], mapper func(T) V) *Ar
 	return result
 }
 
-func ReduceArrayList[T comparable, V any](s *Array[T], initial V, reducer func(acc V, item T) V) V {
+func ReduceArray[T comparable, V any](s *Array[T], initial V, reducer func(acc V, item T) V) V {
 	acc := initial
 	for _, item := range s.items {
 		acc = reducer(acc, item)

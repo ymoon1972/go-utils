@@ -129,12 +129,12 @@ func MapConcurrentArray[T comparable, V comparable](s *ConcurrentArray[T], mappe
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return MapArrayList(s.arr, mapper)
+	return MapArray(s.arr, mapper)
 }
 
 func ReduceConcurrentArray[T comparable, V any](s *ConcurrentArray[T], initial V, reducer func(acc V, item T) V) V {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return ReduceArrayList(s.arr, initial, reducer)
+	return ReduceArray(s.arr, initial, reducer)
 }

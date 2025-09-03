@@ -56,7 +56,7 @@ func main() {
     arr.Sort(func(a, b int) int { return a - b })
 
     evens := arr.Filter(func(x int) bool { return x%2 == 0 })
-    doubled := array.MapArrayList(evens, func(x int) int { return x * 2 })
+    doubled := array.MapArray(evens, func(x int) int { return x * 2 })
     sum := array.ReduceArrayList(doubled, 0, func(acc, x int) int { return acc + x })
 
     fmt.Println("evens:", evens.Values())

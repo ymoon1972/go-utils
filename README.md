@@ -4,8 +4,7 @@ Java collection-like utilities for Go (generic collections inspired by Java's Co
 
 This repository provides a small set of generic data structures with familiar APIs:
 - ArrayList: dynamic array-backed list with utilities such as InsertAt, Contains, Sort, Filter, Map, Reduce
-- LinkedList: singly linked list with head/tail operations and index-based access
-- DoubleLinkedList: doubly linked list with bidirectional traversal operations
+- LinkedList: doubly linked list with bidirectional traversal operations
 - Stack: LIFO stack backed by LinkedList (Push, Pop, Peek)
 - Queue: FIFO queue backed by LinkedList (Offer, Poll, Peek)
 - PriorityQueue: binary-heap priority queue with a user-supplied comparator (min-/max-heap behavior by comparator)
@@ -15,6 +14,12 @@ This repository provides a small set of generic data structures with familiar AP
 - ConcurrentQueue: thread-safe FIFO queue (Offer, OfferValues, Poll, Peek)
 - ConcurrentStack: thread-safe LIFO stack (Push, PushValues, Pop, Peek)
 - ConcurrentPriorityQueue: thread-safe binary-heap priority queue with comparator (Offer, OfferValues, Poll, Peek)
+
+Provides common functional interface using `Iterator` interface.
+ - Each: iterate over each element of the collection and apply the given action.
+ - Filter: filtering elements satisfying the given predicate.
+ - Map: mapping each element to other type.
+ - Reduce: combines elements into a single cumulative result by applying a specified reduce method.
 
 All collections are implemented using Go generics (type parameters), with methods designed to be easy to use and test.
 
